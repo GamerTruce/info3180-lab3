@@ -4,8 +4,10 @@ Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
 Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
-
+from app import mail
 from app import app
+from app.forms import ContactForm
+from flask_mail import Message
 from flask import render_template, request, redirect, url_for, flash
 
 
@@ -23,6 +25,19 @@ def home():
 def about():
     """Render the website's about page."""
     return render_template('about.html', name="Mary Jane")
+
+
+@app.route('/contact/', methods=['POST', 'GET'])
+def contact():
+    """Render the website's contact page."""
+    form = ContactForm()
+    if form.validate_on_submit():
+        msg = Message(form.subject.data, sender=(form.name.data, form.email.data), recipients=['4dbda03df6-8e0b60@inbox.mailtrap.io'])
+        msg.body = form.text_area.data
+        mail.send(msg)
+        flash('Email was successfully sent.')
+        return redirect(url_for('home'))
+    return render_template('contact.html', form=form)
 
 
 ###
